@@ -213,8 +213,44 @@ let count = 0;
 let startcellSelected = false;
 let startCell = {};
 let endCell = {};
+let scrollXRStarted = false;
+let scrollXLStarted = false;
+$(".input-cell").mousemove(function (e) {
+    e.preventDefault();
+    if (e.buttons == 1) {
+        if (e.pageX > ($(window).width() - 10) && !scrollXRStarted) {
+            scrollXR();
+        } else if (e.pageX < (10) && !scrollXLStarted) {
+            scrollXL();
+        }
+        if (!startcellSelected) {
+            let [rowId, colId] = getRowCol(this);
+            startCell = { "rowId": rowId, "colId": colId };
+            selectAllBetweenCells(startCell, startCell);
+            startcellSelected = true;
+            $(".input-cell.selected").attr("contenteditable", "false");
+        }
+    } else {
+        startcellSelected = false;
+    }
+});
 
+$(".input-cell").mouseenter(function (e) {
+    if (e.buttons == 1) {
+        if (e.pageX < ($(window).width() - 10) && scrollXRStarted) {
+            clearInterval(scrollXRInterval);
+            scrollXRStarted = false;
+        }
 
+        if (e.pageX > 10 && scrollXLStarted) {
+            clearInterval(scrollXLInterval);
+            scrollXLStarted = false;
+        }
+        let [rowId, colId] = getRowCol(this);
+        endCell = { "rowId": rowId, "colId": colId };
+        selectAllBetweenCells(startCell, endCell);
+    }
+})
 
 function selectAllBetweenCells(start, end) {
     $(".input-cell.selected").removeClass("selected top-selected bottom-selected left-selected right-selected");
@@ -226,7 +262,22 @@ function selectAllBetweenCells(start, end) {
     }
 }
 
+// let scrollXRInterval;
+// let scrollXLInterval;
+// function scrollXR() {
+//     scrollXRStarted = true;
+//     scrollXRInterval = setInterval(() => {
+//         $("#cells").scrollLeft($("#cells").scrollLeft() + 100);
+//     }, 100);
+// }
 
+
+// function scrollXL() {
+//     scrollXLStarted = true;
+//     scrollXLInterval = setInterval(() => {
+//         $("#cells").scrollLeft($("#cells").scrollLeft() - 100);
+//     }, 100);
+// }
 
 $(".data-container").mousemove(function (e) {
     e.preventDefault();
@@ -238,6 +289,13 @@ $(".data-container").mousemove(function (e) {
         }
     }
 });
+
+// $(".data-container").mouseup(function (e) {
+//     clearInterval(scrollXRInterval);
+//     clearInterval(scrollXLInterval);
+//     scrollXRStarted = false;
+//     scrollXLStarted = false;
+// });
 
 $(".alignment").click(function (e) {
     let alignment = $(this).attr("data-type");
@@ -842,3 +900,35 @@ $("#paste").click(function (e) {
     }
     loadCurrentSheet();
 })
+
+
+// let selectedCells = [];
+
+
+// $("#copy").click(function () {
+//     $(".input-cell.selected").each(function () {
+//         let [rowId, colId] = getRowCol(this);
+//         console.log(rowId, colId);
+//         selectedCells.push(getRowCol(this));
+//     });
+//     console.log(cellData);
+// })
+
+// $("#paste").click(function () {
+//     console.log(cellData);
+//     let [rowId, colId] = getRowCol($(".input-cell.selected")[0]);
+//     let rowDistance = rowId - selectedCells[0][0];
+//     let colDistance = colId - selectedCells[0][1];
+
+//     for (let cell of selectedCells) {
+//         let newRowId = cell[0] + rowDistance;
+//         let newColId = cell[1] + colDistance;
+
+//         if (!cellData[selectedSheet][newRowId]) {
+//             cellData[selectedSheet][newRowId] = {};
+//         }
+//         cellData[selectedSheet][newRowId][newColId] = { ...cellData[selectedSheet][cell[0]][cell[1]] };
+//     }
+//     console.log(cellData);
+//     loadCurrentSheet();
+// })
